@@ -8,10 +8,12 @@ import json
 import os
 import sqlite3
 import sys
+import time
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlencode
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +38,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def fetch_payload(url: str, start_date: str, end_date: str, timeout: int) -> Any:
+def fetch_payload(url: str, start_date: str, end_date: str, timeout: int, attempts: int = 3) -> Any:
     if not url.startswith(("http://", "https://")):
         raise ValueError("SIROS_API_URL deve ser uma URL HTTP ou HTTPS válida")
     api_start_date = date.fromisoformat(start_date).strftime("%d%m%Y")
@@ -46,8 +48,27 @@ def fetch_payload(url: str, start_date: str, end_date: str, timeout: int) -> Any
     token = os.getenv("SIROS_API_TOKEN")
     if token:
         request.add_header("Authorization", f"Bearer {token}")
-    with urlopen(request, timeout=timeout) as response:
-        return json.load(response)
+    for attempt in range(attempts):
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                return json.load(response)
+        except (HTTPError, URLError):
+            if attempt == attempts - 1:
+                raise
+            time.sleep(2 ** attempt)
+
+
+def fetch_period_records(url: str, start_date: str, end_date: str, timeout: int) -> list[dict[str, Any]]:
+    start = date.fromisoformat(start_date)
+    end = date.fromisoformat(end_date)
+    records: list[dict[str, Any]] = []
+    current = start
+    while current <= end:
+        chunk_end = min(current + timedelta(days=6), end)
+        payload = fetch_payload(url, current.isoformat(), chunk_end.isoformat(), timeout)
+        records.extend(extract_records(payload))
+        current = chunk_end + timedelta(days=1)
+    return records
 
 
 def extract_records(payload: Any) -> list[dict[str, Any]]:
@@ -143,8 +164,9 @@ def write_supabase(records: list[dict[str, str]], timeout: int) -> None:
 def main() -> int:
     args = parse_args()
     try:
-        payload = fetch_payload(args.api_url, args.start_date, args.end_date, args.timeout)
-        records = [normalize(record) for record in extract_records(payload)]
+        raw_records = fetch_period_records(args.api_url, args.start_date, args.end_date, args.timeout)
+        normalized_records = [normalize(record) for record in raw_records]
+        records = list({(item["flight_number"], item["departure"], item["origin"], item["destination"]): item for item in normalized_records}.values())
         write_outputs(records, args.output, args.database, args.start_date, args.end_date)
         if not args.skip_supabase:
             write_supabase(records, args.timeout)
