@@ -18,12 +18,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_API_URL = "https://sas.anac.gov.br/sas/siros_api/api/voosPeriodo"
 
 
+def environment_value(name: str, fallback: str) -> str:
+    value = os.getenv(name, "").strip()
+    return value or fallback
+
+
 def parse_args() -> argparse.Namespace:
     today = date.today()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--api-url", default=os.getenv("SIROS_API_URL", DEFAULT_API_URL))
-    parser.add_argument("--start-date", default=os.getenv("SIROS_START_DATE", today.isoformat()))
-    parser.add_argument("--end-date", default=os.getenv("SIROS_END_DATE", (today + timedelta(days=30)).isoformat()))
+    parser.add_argument("--api-url", default=environment_value("SIROS_API_URL", DEFAULT_API_URL))
+    parser.add_argument("--start-date", default=environment_value("SIROS_START_DATE", today.isoformat()))
+    parser.add_argument("--end-date", default=environment_value("SIROS_END_DATE", (today + timedelta(days=30)).isoformat()))
     parser.add_argument("--output", type=Path, default=ROOT / "data" / "flights.json")
     parser.add_argument("--database", type=Path, default=ROOT / "data" / "flights.db")
     parser.add_argument("--timeout", type=int, default=60)
@@ -32,6 +37,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def fetch_payload(url: str, start_date: str, end_date: str, timeout: int) -> Any:
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("SIROS_API_URL deve ser uma URL HTTP ou HTTPS válida")
     query = urlencode({"dataReferenciaInicio": start_date, "dataReferenciaFinal": end_date})
     request = Request(url + ("&" if "?" in url else "?") + query, headers={"Accept": "application/json", "User-Agent": "siros-flight-dashboard/1.0"})
     token = os.getenv("SIROS_API_TOKEN")
