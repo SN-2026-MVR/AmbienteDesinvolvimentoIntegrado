@@ -1,0 +1,12 @@
+[
+  {"iata": "GRU", "name": "São Paulo/Guarulhos", "city": "São Paulo", "state": "SP"},
+  {"iata": "CGH", "name": "São Paulo/Congonhas", "city": "São Paulo", "state": "SP"},
+  {"iata": "BSB", "name": "Brasília", "city": "Brasília", "state": "DF"},
+  {"iata": "GIG", "name": "Rio de Janeiro/Galeão", "city": "Rio de Janeiro", "state": "RJ"},
+  {"iata": "SDU", "name": "Rio de Janeiro/Santos Dumont", "city": "Rio de Janeiro", "state": "RJ"},
+  {"iata": "CNF", "name": "Belo Horizonte/Confins", "city": "Confins", "state": "MG"},
+  {"iata": "SSA", "name": "Salvador", "city": "Salvador", "state": "BA"},
+  {"iata": "REC", "name": "Recife", "city": "Recife", "state": "PE"},
+  {"iata": "POA", "name": "Porto Alegre", "city": "Porto Alegre", "state": "RS"},
+  {"iata": "MAO", "name": "Manaus", "city": "Manaus", "state": "AM"}
+]

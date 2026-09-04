@@ -1,0 +1,37 @@
+name: Atualizar voos SIROS
+
+on:
+  schedule:
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-flights:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Consultar API SIROS
+        env:
+          SIROS_API_URL: ${{ vars.SIROS_API_URL }}
+          SIROS_API_TOKEN: ${{ secrets.SIROS_API_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python scripts/fetch_flights.py
+
+      - name: Publicar dados atualizados
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/flights.json data/flights.db
+          git diff --cached --quiet || git commit -m 'chore: atualizar voos SIROS'
+          git push
