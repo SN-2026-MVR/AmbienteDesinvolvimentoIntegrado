@@ -38,7 +38,7 @@ Variáveis: `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` são obrigatórias para
 2. Copie a URL do projeto e a chave `service_role` em **Settings > API**.
 3. Nunca coloque a chave `service_role` no HTML ou no repositório.
 
-O coletor usa `POST /rest/v1/flights` com `resolution=merge-duplicates`, usando a restrição única da rota e do horário para atualizar registros sem duplicá-los. A política permite leitura pública; a chave `service_role` é usada somente no coletor.
+O coletor usa `POST /rest/v1/flights` com `resolution=merge-duplicates`, usando a restrição única da rota e do horário para atualizar registros sem duplicá-los. A política permite leitura pública; a chave `service_role` é usada somente no coletor. O arquivo `data/flights.json` também registra `pipeline.completed_at`, `pipeline.airports`, `pipeline.batches`, `pipeline.errors` e `pipeline.status` para o painel de acompanhamento.
 
 ## GitHub Actions
 

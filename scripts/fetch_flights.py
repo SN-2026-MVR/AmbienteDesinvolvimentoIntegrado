@@ -58,17 +58,24 @@ def fetch_payload(url: str, start_date: str, end_date: str, timeout: int, attemp
             time.sleep(2 ** attempt)
 
 
-def fetch_period_records(url: str, start_date: str, end_date: str, timeout: int) -> list[dict[str, Any]]:
+def fetch_period_records(url: str, start_date: str, end_date: str, timeout: int) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     start = date.fromisoformat(start_date)
     end = date.fromisoformat(end_date)
     records: list[dict[str, Any]] = []
+    errors: list[str] = []
+    batches = 0
     current = start
     while current <= end:
         chunk_end = min(current + timedelta(days=6), end)
-        payload = fetch_payload(url, current.isoformat(), chunk_end.isoformat(), timeout)
-        records.extend(extract_records(payload))
+        batches += 1
+        try:
+            payload = fetch_payload(url, current.isoformat(), chunk_end.isoformat(), timeout)
+            records.extend(extract_records(payload))
+        except Exception as error:  # noqa: BLE001 - contabiliza o lote e continua a coleta
+            errors.append(f"{current.isoformat()}..{chunk_end.isoformat()}: {error}")
         current = chunk_end + timedelta(days=1)
-    return records
+    airports = sorted({airport for record in records for airport in (value(record, "sg_icao_origem"), value(record, "sg_icao_destino")) if airport})
+    return records, {"batches": batches, "errors": len(errors), "error_details": errors, "airports": airports}
 
 
 def extract_records(payload: Any) -> list[dict[str, Any]]:
@@ -112,9 +119,11 @@ def normalize(record: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def write_outputs(records: list[dict[str, str]], output: Path, database: Path, start_date: str, end_date: str) -> None:
+def write_outputs(records: list[dict[str, str]], output: Path, database: Path, start_date: str, end_date: str, pipeline: dict[str, Any]) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
-    document = {"updated_at": date.today().isoformat(), "period": {"start": start_date, "end": end_date}, "count": len(records), "flights": records}
+    now = time.strftime("%Y-%m-%dT%H:%M:%S")
+    pipeline = {**pipeline, "completed_at": now, "status": "concluído" if pipeline["errors"] == 0 else "concluído com erros"}
+    document = {"updated_at": date.today().isoformat(), "period": {"start": start_date, "end": end_date}, "count": len(records), "pipeline": pipeline, "flights": records}
     output.write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding="utf-8")
 
     database.parent.mkdir(parents=True, exist_ok=True)
@@ -164,10 +173,11 @@ def write_supabase(records: list[dict[str, str]], timeout: int) -> None:
 def main() -> int:
     args = parse_args()
     try:
-        raw_records = fetch_period_records(args.api_url, args.start_date, args.end_date, args.timeout)
+        raw_records, pipeline = fetch_period_records(args.api_url, args.start_date, args.end_date, args.timeout)
         normalized_records = [normalize(record) for record in raw_records]
         records = list({(item["flight_number"], item["departure"], item["origin"], item["destination"]): item for item in normalized_records}.values())
-        write_outputs(records, args.output, args.database, args.start_date, args.end_date)
+        pipeline["records"] = len(records)
+        write_outputs(records, args.output, args.database, args.start_date, args.end_date, pipeline)
         if not args.skip_supabase:
             write_supabase(records, args.timeout)
         destino = "localmente e no Supabase" if not args.skip_supabase else "localmente"
