@@ -15,7 +15,7 @@ python -m http.server 8000
 
 Abra `http://localhost:8000`. O navegador precisa acessar a página por HTTP para carregar `data/flights.json`; abrir o HTML diretamente como arquivo pode bloquear essa leitura.
 
-O período padrão vai de hoje até 30 dias à frente. Para consultar outro intervalo:
+O período padrão vai de hoje até 30 dias à frente. O coletor converte as datas ISO para o formato `ddmmyyyy` exigido pela SIROS. Para consultar outro intervalo:
 
 ```powershell
 python scripts/fetch_flights.py --start-date 2026-09-01 --end-date 2026-09-30

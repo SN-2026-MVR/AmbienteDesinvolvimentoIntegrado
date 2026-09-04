@@ -39,7 +39,9 @@ def parse_args() -> argparse.Namespace:
 def fetch_payload(url: str, start_date: str, end_date: str, timeout: int) -> Any:
     if not url.startswith(("http://", "https://")):
         raise ValueError("SIROS_API_URL deve ser uma URL HTTP ou HTTPS válida")
-    query = urlencode({"dataReferenciaInicio": start_date, "dataReferenciaFinal": end_date})
+    api_start_date = date.fromisoformat(start_date).strftime("%d%m%Y")
+    api_end_date = date.fromisoformat(end_date).strftime("%d%m%Y")
+    query = urlencode({"dataReferenciaInicio": api_start_date, "dataReferenciaFinal": api_end_date})
     request = Request(url + ("&" if "?" in url else "?") + query, headers={"Accept": "application/json", "User-Agent": "siros-flight-dashboard/1.0"})
     token = os.getenv("SIROS_API_TOKEN")
     if token:

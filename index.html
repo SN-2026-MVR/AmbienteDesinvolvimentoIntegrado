@@ -3,6 +3,135 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Observatório SIROS · ANAC</title>
+  <style>
+    :root { color-scheme: light; --ink: #17212b; --muted: #65717d; --paper: #f5f3ee; --line: #d9d7d0; --accent: #d95f39; --accent-dark: #9f3c23; --green: #28745b; --blue: #46718a; }
+    * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: radial-gradient(circle at 80% 0%, #f1d5bd 0, transparent 34%), var(--paper); font: 16px/1.5 Georgia, 'Times New Roman', serif; }
+  main { max-width: 1240px; margin: 0 auto; padding: 48px 24px 72px; }
+  header { display: flex; justify-content: space-between; gap: 32px; align-items: end; border-bottom: 1px solid var(--ink); padding-bottom: 24px; }
+  h1 { margin: 0; font-size: clamp(2.2rem, 6vw, 5rem); line-height: .95; letter-spacing: -.04em; font-weight: 500; }
+  h2 { margin: 0; font-size: 1.5rem; font-weight: 500; }
+  .eyebrow { margin: 0 0 12px; color: var(--accent-dark); font: 700 .75rem/1.2 Arial, sans-serif; letter-spacing: .13em; text-transform: uppercase; }
+  header p { max-width: 340px; margin: 0; color: var(--muted); }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 28px 0 14px; }
+  .toolbar p { margin: 3px 0 0; color: var(--muted); font: .82rem Arial, sans-serif; }
+  button { border: 0; background: var(--ink); color: white; padding: 10px 16px; cursor: pointer; font: 700 .8rem Arial, sans-serif; }
+  button:hover { background: var(--accent-dark); }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 28px 0 34px; }
+  .metric, .panel { background: rgba(255,253,248,.82); border: 1px solid var(--line); }
+  .metric { padding: 18px; border-top: 3px solid var(--ink); }
+  .metric strong { display: block; margin-top: 7px; font-size: 2rem; font-weight: 500; }
+  .metric span { color: var(--muted); font: 700 .68rem Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+  .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--ink); }
+  .tab { background: transparent; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+  .view { display: none; }
+  .view.active { display: block; }
+  .table-wrap { overflow-x: auto; background: var(--panel); border-top: 3px solid var(--ink); }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  th, td { padding: 14px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font: 700 .68rem Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+  td:first-child { font-weight: 700; }
+  .route { white-space: nowrap; }
+  .status { color: var(--accent-dark); font: 700 .78rem Arial, sans-serif; }
+  .empty { padding: 28px 14px; color: var(--muted); }
+  .history { display: grid; gap: 10px; }
+  .history-row { display: grid; grid-template-columns: 150px 1fr auto; gap: 18px; align-items: center; padding: 18px; background: var(--panel); border-left: 3px solid var(--blue); }
+  .history-row strong { font-size: 1.25rem; font-weight: 500; }
+  .history-row span { color: var(--muted); font: .8rem Arial, sans-serif; }
+  .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 8px; }
+  .stage { position: relative; min-height: 150px; padding: 22px 18px; background: var(--panel); border: 1px solid var(--line); border-right: 0; }
+  .stage:last-child { border-right: 1px solid var(--line); }
+  .stage:not(:last-child)::after { content: '→'; position: absolute; z-index: 1; right: -13px; top: 54px; width: 24px; height: 24px; color: white; background: var(--accent); border-radius: 50%; text-align: center; font: 700 15px/24px Arial, sans-serif; }
+  .stage-index { color: var(--accent-dark); font: 700 .7rem Arial, sans-serif; }
+  .stage h3 { margin: 15px 0 6px; font-size: 1.15rem; font-weight: 500; }
+  .stage p { margin: 0; color: var(--muted); font: .78rem/1.4 Arial, sans-serif; }
+  footer { margin-top: 22px; color: var(--muted); font: .75rem Arial, sans-serif; }
+  @media (max-width: 760px) { main { padding: 32px 16px 48px; } header { display: block; } header p { margin-top: 24px; } .metrics { grid-template-columns: repeat(2, 1fr); } .pipeline { grid-template-columns: 1fr; gap: 8px; } .stage { min-height: auto; border-right: 1px solid var(--line); } .stage:not(:last-child)::after { content: '↓'; right: 50%; top: auto; bottom: -16px; } .history-row { grid-template-columns: 1fr; gap: 4px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div><p class="eyebrow">Monitoramento público · ANAC</p><h1>Observatório<br>SIROS</h1></div>
+      <p>Voos programados, histórico de publicação e saúde do pipeline de dados em um só lugar.</p>
+    </header>
+
+    <section class="metrics" aria-label="Resumo dos dados">
+  <div class="metric"><span>Voos no período</span><strong id="metric-total">—</strong></div>
+  <div class="metric"><span>Voos do dia</span><strong id="metric-today">—</strong></div>
+  <div class="metric"><span>Rotas monitoradas</span><strong id="metric-routes">—</strong></div>
+      <div class="metric"><span>Última atualização</span><strong id="metric-updated">—</strong></div>
+    </section>
+
+    <nav class="tabs" aria-label="Seções do observatório">
+  <button class="tab active" data-view="today">Voos do dia</button>
+  <button class="tab" data-view="history">Histórico ANAC</button>
+  <button class="tab" data-view="pipeline">Pipeline</button>
+      <button id="reload" type="button" title="Recarregar dados">Recarregar</button>
+    </nav>
+
+    <section id="today" class="view active" aria-labelledby="today-title">
+      <div class="toolbar"><div><h2 id="today-title">Voos programados hoje</h2><p id="today-subtitle">Carregando dados da SIROS...</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Voo</th><th>Empresa</th><th>Rota</th><th>Partida</th><th>Chegada</th><th>Situação</th></tr></thead><tbody id="flights"></tbody></table></div>
+    </section>
+
+    <section id="history" class="view" aria-labelledby="history-title">
+      <div class="toolbar"><div><h2 id="history-title">Histórico ANAC</h2><p>Distribuição dos voos por data de partida no período consultado.</p></div></div>
+      <div id="history-list" class="history"></div>
+    </section>
+
+    <section id="pipeline" class="view" aria-labelledby="pipeline-title">
+      <div class="toolbar"><div><h2 id="pipeline-title">Pipeline de dados</h2><p>Rastreamento das etapas entre a SIROS e este painel.</p></div></div>
+      <div class="pipeline">
+        <article class="stage"><span class="stage-index">01 · ORIGEM</span><h3>API SIROS</h3><p>Consulta pública da ANAC por período de referência.</p></article>
+        <article class="stage"><span class="stage-index">02 · PROCESSAMENTO</span><h3>Normalização</h3><p>Campos de voo convertidos para o formato do projeto.</p></article>
+        <article class="stage"><span class="stage-index">03 · DESTINO</span><h3>Supabase</h3><p>Upsert na tabela flights com chave única por rota e horário.</p></article>
+        <article class="stage"><span class="stage-index">04 · ENTREGA</span><h3>Dashboard</h3><p>Cache JSON publicado e visualizado por este painel.</p></article>
+      </div>
+      <div id="pipeline-status" class="empty">Verificando a última execução...</div>
+    </section>
+
+    <footer id="updated">Fonte: API pública SIROS/ANAC.</footer>
+  </main>
+  <script>
+    const safe = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const dateKey = (value) => String(value || '').slice(0, 10);
+    const dateLabel = (value) => { const date = new Date(`${value}T12:00:00`); return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }); };
+    const emptyRow = (message) => `<tr><td colspan="6" class="empty">${safe(message)}</td></tr>`;
+    function render(payload) {
+      const flights = Array.isArray(payload.flights) ? payload.flights : [];
+      const today = new Date().toISOString().slice(0, 10);
+      const todaysFlights = flights.filter((flight) => dateKey(flight.departure) === today);
+      const routes = new Set(flights.map((flight) => `${flight.origin}|${flight.destination}`)).size;
+      document.querySelector('#metric-total').textContent = flights.length;
+      document.querySelector('#metric-today').textContent = todaysFlights.length;
+      document.querySelector('#metric-routes').textContent = routes;
+      document.querySelector('#metric-updated').textContent = payload.updated_at ? dateLabel(payload.updated_at).split(' de ')[0] : '—';
+      document.querySelector('#today-subtitle').textContent = `${todaysFlights.length} voo(s) com partida em ${dateLabel(today)}`;
+      document.querySelector('#flights').innerHTML = todaysFlights.length ? todaysFlights.map((flight) => `<tr><td>${safe(flight.flight_number) || '—'}</td><td>${safe(flight.operator) || '—'}</td><td class="route">${safe(flight.origin) || '—'} → ${safe(flight.destination) || '—'}</td><td>${safe(flight.departure) || '—'}</td><td>${safe(flight.arrival) || '—'}</td><td class="status">${safe(flight.status) || '—'}</td></tr>`).join('') : emptyRow('Nenhum voo encontrado para hoje. O período consultado pode não conter partidas nesta data.');
+      const byDate = flights.reduce((groups, flight) => { const key = dateKey(flight.departure) || 'sem-data'; groups[key] = (groups[key] || 0) + 1; return groups; }, {});
+      const dates = Object.keys(byDate).sort().reverse();
+      document.querySelector('#history-list').innerHTML = dates.length ? dates.map((date) => `<article class="history-row"><strong>${safe(dateLabel(date))}</strong><span>${byDate[date]} voo(s) programado(s)</span><span>${date === today ? 'Hoje' : 'ANAC / SIROS'}</span></article>`).join('') : '<div class="empty">O histórico aparecerá quando a API retornar voos para o período consultado.</div>';
+      document.querySelector('#pipeline-status').textContent = `Última coleta: ${safe(payload.updated_at || 'não registrada')} · ${flights.length} registro(s) disponíveis no cache publicado.`;
+      document.querySelector('#updated').textContent = `Fonte: API pública SIROS/ANAC · Atualizado em ${safe(payload.updated_at || '—')}.`;
+    }
+    async function loadFlights() {
+      try { const response = await fetch(`data/flights.json?cache=${Date.now()}`); if (!response.ok) throw new Error(`HTTP ${response.status}`); render(await response.json()); }
+      catch (error) { document.querySelector('#today-subtitle').textContent = 'Falha ao carregar o cache de dados'; document.querySelector('#flights').innerHTML = emptyRow(`${error.message}. Execute o coletor e sirva esta pasta por HTTP.`); document.querySelector('#history-list').innerHTML = `<div class="empty">${safe(error.message)}</div>`; document.querySelector('#pipeline-status').textContent = 'A coleta ainda não produziu um cache legível.'; }
+    }
+    document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach((item) => item.classList.remove('active')); document.querySelectorAll('.view').forEach((view) => view.classList.remove('active')); tab.classList.add('active'); document.querySelector(`#${tab.dataset.view}`).classList.add('active'); }));
+    document.querySelector('#reload').addEventListener('click', loadFlights);
+    loadFlights();
+  </script>
+</body>
+</html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Voos SIROS</title>
   <style>
     :root { color-scheme: light; --ink: #17212b; --muted: #65717d; --paper: #f5f3ee; --line: #d9d7d0; --accent: #d95f39; --accent-dark: #9f3c23; }
