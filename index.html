@@ -140,8 +140,13 @@
     let supabseReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'https://SEU_PROJETO.supabase.co' && SUPABASE_ANON_KEY !== 'SUA_ANON_KEY_PUBLICA');
 
     const todayISO = () => new Date().toISOString().slice(0, 10);
+    const defaultStartDate = (() => {
+      const date = new Date();
+      date.setDate(date.getDate() - 30);
+      return date.toISOString().slice(0, 10);
+    })();
     const filterState = {
-      startDate: todayISO(),
+      startDate: defaultStartDate,
       endDate: todayISO(),
       airport: ''
     };
@@ -266,7 +271,7 @@
     }
 
     function resetFilters() {
-      filterState.startDate = todayISO();
+      filterState.startDate = defaultStartDate;
       filterState.endDate = todayISO();
       filterState.airport = '';
       syncFilterInputs();
