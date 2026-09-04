@@ -16,8 +16,15 @@
   header p { max-width: 340px; margin: 0; color: var(--muted); }
   .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 28px 0 14px; }
   .toolbar p { margin: 3px 0 0; color: var(--muted); font: .82rem Arial, sans-serif; }
+  .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0 26px; padding: 18px; background: rgba(255,253,248,.82); border: 1px solid var(--line); }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { color: var(--muted); font: 700 .7rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+  .field input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); background: white; color: var(--ink); font: 16px/1.5 Arial, sans-serif; }
+  .filter-actions { display: flex; align-items: end; gap: 10px; }
   button { border: 0; background: var(--ink); color: white; padding: 10px 16px; cursor: pointer; font: 700 .8rem Arial, sans-serif; }
   button:hover { background: var(--accent-dark); }
+  button.secondary { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  button.secondary:hover { background: rgba(23,33,43,.04); }
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 28px 0 34px; }
   .metric, .panel { background: rgba(255,253,248,.82); border: 1px solid var(--line); }
   .metric { padding: 18px; border-top: 3px solid var(--ink); }
@@ -77,6 +84,25 @@
       <button id="reload" type="button" title="Recarregar dados">Recarregar</button>
     </nav>
 
+    <section class="filters" aria-label="Filtros de voo">
+      <div class="field">
+        <label for="filter-start-date">Data inicial</label>
+        <input id="filter-start-date" type="date" value="">
+      </div>
+      <div class="field">
+        <label for="filter-end-date">Data final</label>
+        <input id="filter-end-date" type="date" value="">
+      </div>
+      <div class="field">
+        <label for="filter-airport">Aeroporto</label>
+        <input id="filter-airport" type="text" value="" placeholder="SBGR, SBSP, etc.">
+      </div>
+      <div class="filter-actions">
+        <button id="apply-filters" type="button">Aplicar filtros</button>
+        <button id="reset-filters" type="button" class="secondary">Limpar</button>
+      </div>
+    </section>
+
     <section id="today" class="view active" aria-labelledby="today-title">
       <div class="toolbar"><div><h2 id="today-title">Voos programados hoje</h2><p id="today-subtitle">Carregando dados da SIROS...</p></div></div>
       <div class="table-wrap"><table><thead><tr><th>Voo</th><th>Empresa</th><th>Rota</th><th>Partida</th><th>Chegada</th><th>Situação</th></tr></thead><tbody id="flights"></tbody></table></div>
@@ -112,8 +138,40 @@
     const SUPABASE_URL = (localStorage.getItem('SUPABASE_URL') || DEFAULT_SUPABASE_URL).trim();
     const SUPABASE_ANON_KEY = (localStorage.getItem('SUPABASE_ANON_KEY') || DEFAULT_SUPABASE_ANON_KEY).trim();
     let supabseReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'https://SEU_PROJETO.supabase.co' && SUPABASE_ANON_KEY !== 'SUA_ANON_KEY_PUBLICA');
-    
-    async function fetchFlightsFromSupabase(startDate, endDate, limit = 50, offset = 0) {
+
+    const todayISO = () => new Date().toISOString().slice(0, 10);
+    const filterState = {
+      startDate: todayISO(),
+      endDate: todayISO(),
+      airport: ''
+    };
+
+    function syncFilterInputs() {
+      const start = document.querySelector('#filter-start-date');
+      const end = document.querySelector('#filter-end-date');
+      const airport = document.querySelector('#filter-airport');
+      if (start) start.value = filterState.startDate;
+      if (end) end.value = filterState.endDate;
+      if (airport) airport.value = filterState.airport;
+    }
+
+    function normalizeAirport(value) {
+      return String(value || '').trim().toUpperCase();
+    }
+
+    function filterFlightsByCriteria(flights) {
+      const airportFilter = normalizeAirport(filterState.airport);
+      return (Array.isArray(flights) ? flights : []).filter((flight) => {
+        const departureDate = dateKey(flight.departure);
+        const okDate = (!filterState.startDate || departureDate >= filterState.startDate) && (!filterState.endDate || departureDate <= filterState.endDate);
+        if (!airportFilter) return okDate;
+        const origin = normalizeAirport(flight.origin);
+        const destination = normalizeAirport(flight.destination);
+        return okDate && (origin.includes(airportFilter) || destination.includes(airportFilter));
+      });
+    }
+
+    async function fetchFlightsFromSupabase(startDate, endDate, limit = 200, offset = 0, airport = '') {
       if (!supabseReady) return [];
       try {
         const params = new URLSearchParams();
@@ -123,6 +181,9 @@
         params.append('order', 'departure.asc');
         params.append('limit', String(limit));
         params.append('offset', String(offset));
+        if (airport) {
+          params.append('or', `(origin.eq.${airport.toUpperCase()},destination.eq.${airport.toUpperCase()})`);
+        }
 
         const response = await fetch(`${SUPABASE_URL}/rest/v1/flights?${params.toString()}`, {
           headers: {
@@ -140,29 +201,30 @@
         const cached = await fetch(`data/flights.json?cache=${Date.now()}`)
           .then((response) => response.ok ? response.json() : { flights: [] })
           .catch(() => ({ flights: [] }));
-        const flights = Array.isArray(cached.flights) ? cached.flights.filter((flight) => dateKey(flight.departure) === date) : [];
-        callback(flights);
+        const flights = filterFlightsByCriteria(Array.isArray(cached.flights) ? cached.flights : []);
+        callback(flights.filter((flight) => dateKey(flight.departure) === date));
         return;
       }
-      const flights = await fetchFlightsFromSupabase(date, date, 100);
-      callback(flights);
+      const flights = await fetchFlightsFromSupabase(filterState.startDate || date, filterState.endDate || date, 200, 0, filterState.airport);
+      callback(flights.filter((flight) => dateKey(flight.departure) === date));
     }
     
     function render(payload) {
-      const flights = Array.isArray(payload.flights) ? payload.flights : [];
-      const today = new Date().toISOString().slice(0, 10);
-      const todaysFlights = !supabseReady ? flights.filter((flight) => dateKey(flight.departure) === today) : [];
-      loadFlightsForDate(today, (result) => {
-        const sourceFlights = supabseReady ? result : todaysFlights;
-        const routes = new Set([...(flights || []), ...(sourceFlights || [])].map((flight) => `${flight.origin}|${flight.destination}`)).size;
-        document.querySelector('#metric-today').textContent = sourceFlights.length || '—';
-        document.querySelector('#metric-routes').textContent = routes || '—';
-        document.querySelector('#today-subtitle').textContent = `${sourceFlights.length} voo(s) com partida em ${dateLabel(today)}`;
-        document.querySelector('#flights').innerHTML = sourceFlights.length ? sourceFlights.map((flight) => `<tr><td>${safe(flight.flight_number) || '—'}</td><td>${safe(flight.operator) || '—'}</td><td class="route">${safe(flight.origin) || '—'} → ${safe(flight.destination) || '—'}</td><td>${safe(flight.departure) || '—'}</td><td>${safe(flight.arrival) || '—'}</td><td class="status">${safe(flight.status) || '—'}</td></tr>`).join('') : emptyRow(supabseReady ? 'Nenhum voo encontrado para hoje.' : 'Configure Supabase ou use o cache JSON.');
-      });
-      document.querySelector('#metric-total').textContent = flights.length || (supabseReady ? 'Consultando...' : '—');
+      const allFlights = Array.isArray(payload.flights) ? filterFlightsByCriteria(payload.flights) : [];
+      const today = todayISO();
+      const todaysFlights = allFlights.filter((flight) => dateKey(flight.departure) === today);
+      const filteredFlights = allFlights;
+      const routes = new Set(filteredFlights.map((flight) => `${flight.origin}|${flight.destination}`)).size;
+      document.querySelector('#metric-today').textContent = todaysFlights.length || '—';
+      document.querySelector('#metric-routes').textContent = routes || '—';
+      const periodLabel = filterState.startDate && filterState.endDate && filterState.startDate !== filterState.endDate
+        ? `${dateLabel(filterState.startDate)} até ${dateLabel(filterState.endDate)}`
+        : dateLabel(filterState.startDate || today);
+      document.querySelector('#today-subtitle').textContent = `${filteredFlights.length} voo(s) no período ${periodLabel}${filterState.airport ? ` · aeroporto ${filterState.airport.toUpperCase()}` : ''}`;
+      document.querySelector('#flights').innerHTML = filteredFlights.length ? filteredFlights.map((flight) => `<tr><td>${safe(flight.flight_number) || '—'}</td><td>${safe(flight.operator) || '—'}</td><td class="route">${safe(flight.origin) || '—'} → ${safe(flight.destination) || '—'}</td><td>${safe(flight.departure) || '—'}</td><td>${safe(flight.arrival) || '—'}</td><td class="status">${safe(flight.status) || '—'}</td></tr>`).join('') : emptyRow(supabseReady ? 'Nenhum voo encontrado para o filtro atual.' : 'Configure Supabase ou use o cache JSON.');
+      document.querySelector('#metric-total').textContent = filteredFlights.length || '—';
       document.querySelector('#metric-updated').textContent = payload.updated_at ? dateLabel(payload.updated_at).split(' de ')[0] : '—';
-      const byDate = flights.reduce((groups, flight) => { const key = dateKey(flight.departure) || 'sem-data'; groups[key] = (groups[key] || 0) + 1; return groups; }, {});
+      const byDate = filteredFlights.reduce((groups, flight) => { const key = dateKey(flight.departure) || 'sem-data'; groups[key] = (groups[key] || 0) + 1; return groups; }, {});
       const dates = Object.keys(byDate).sort().reverse();
       document.querySelector('#history-list').innerHTML = dates.length ? dates.map((date) => `<article class="history-row"><strong>${safe(dateLabel(date))}</strong><span>${byDate[date]} voo(s) programado(s)</span><span>${date === today ? 'Hoje' : 'ANAC / SIROS'}</span></article>`).join('') : '<div class="empty">O histórico aparecerá quando a API retornar voos para o período consultado.</div>';
       const pipeline = payload.pipeline || {};
@@ -171,7 +233,12 @@
       document.querySelector('#updated').textContent = `Fonte: API pública SIROS/ANAC · Atualizado em ${safe(payload.updated_at || '—')}.`;
     }
     async function loadFlights() {
-      try { 
+      try {
+        if (supabseReady) {
+          const flights = await fetchFlightsFromSupabase(filterState.startDate, filterState.endDate, 200, 0, filterState.airport);
+          render({ flights, updated_at: new Date().toISOString().slice(0, 10), pipeline: {} });
+          return;
+        }
         const response = await fetch(`data/flights.json?cache=${Date.now()}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
@@ -184,6 +251,28 @@
       }
     }
     
+    function applyFilters() {
+      const startInput = document.querySelector('#filter-start-date');
+      const endInput = document.querySelector('#filter-end-date');
+      const airportInput = document.querySelector('#filter-airport');
+      filterState.startDate = startInput ? startInput.value || todayISO() : todayISO();
+      filterState.endDate = endInput ? endInput.value || filterState.startDate : filterState.startDate;
+      filterState.airport = airportInput ? airportInput.value.trim() : '';
+      if (filterState.startDate && filterState.endDate && filterState.startDate > filterState.endDate) {
+        [filterState.startDate, filterState.endDate] = [filterState.endDate, filterState.startDate];
+        syncFilterInputs();
+      }
+      loadFlights();
+    }
+
+    function resetFilters() {
+      filterState.startDate = todayISO();
+      filterState.endDate = todayISO();
+      filterState.airport = '';
+      syncFilterInputs();
+      loadFlights();
+    }
+
     function setupSupabase() {
       const url = prompt('SUPABASE_URL (ex: https://seu-projeto.supabase.co)', DEFAULT_SUPABASE_URL) || DEFAULT_SUPABASE_URL;
       const key = prompt('SUPABASE_ANON_KEY', DEFAULT_SUPABASE_ANON_KEY) || DEFAULT_SUPABASE_ANON_KEY;
@@ -194,6 +283,9 @@
     }
     document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach((item) => item.classList.remove('active')); document.querySelectorAll('.view').forEach((view) => view.classList.remove('active')); tab.classList.add('active'); document.querySelector(`#${tab.dataset.view}`).classList.add('active'); }));
     document.querySelector('#reload').addEventListener('click', loadFlights);
+    document.querySelector('#apply-filters').addEventListener('click', applyFilters);
+    document.querySelector('#reset-filters').addEventListener('click', resetFilters);
+    syncFilterInputs();
     loadFlights();
   </script>
 </body>
