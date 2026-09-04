@@ -35,10 +35,13 @@ Variáveis: `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` são obrigatórias para
 ## Supabase
 
 1. Crie um projeto no Supabase e execute `sql/setup.sql` no **SQL Editor**.
-2. Copie a URL do projeto e a chave `service_role` em **Settings > API**.
-3. Nunca coloque a chave `service_role` no HTML ou no repositório.
+2. No dashboard Supabase, copie:
+   - **Project URL** em **Settings > API > Project URL**
+   - **Anon Key** em **Settings > API > anon public**
+3. No site, abra o console (F12) e configure as chaves com `localStorage.setItem('SUPABASE_URL', 'url')` e `localStorage.setItem('SUPABASE_ANON_KEY', 'key')`.
+4. A chave `anon` é pública e permite **leitura** apenas; a chave `service_role` é usada apenas no coletor.
 
-O coletor usa `POST /rest/v1/flights` com `resolution=merge-duplicates`, usando a restrição única da rota e do horário para atualizar registros sem duplicá-los. A política permite leitura pública; a chave `service_role` é usada somente no coletor. O arquivo `data/flights.json` também registra `pipeline.completed_at`, `pipeline.airports`, `pipeline.batches`, `pipeline.errors` e `pipeline.status` para o painel de acompanhamento.
+O coletor usa `POST /rest/v1/flights` com `resolution=merge-duplicates`, usando a restrição única da rota e do horário para atualizar registros sem duplicá-los. A política permite leitura pública com a chave `anon`. O dashboard consulta voos paginados do Supabase em vez de baixar tudo de uma vez, reduzindo o uso de banda e memória. O arquivo `data/flights.json` armazena apenas os primeiros 100 registros como cache e os metadados do pipeline (`completed_at`, `airports`, `batches`, `errors`, `status`).
 
 ## GitHub Actions
 

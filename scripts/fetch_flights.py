@@ -123,7 +123,7 @@ def write_outputs(records: list[dict[str, str]], output: Path, database: Path, s
     output.parent.mkdir(parents=True, exist_ok=True)
     now = time.strftime("%Y-%m-%dT%H:%M:%S")
     pipeline = {**pipeline, "completed_at": now, "status": "concluído" if pipeline["errors"] == 0 else "concluído com erros"}
-    document = {"updated_at": date.today().isoformat(), "period": {"start": start_date, "end": end_date}, "count": len(records), "pipeline": pipeline, "flights": records}
+    document = {"updated_at": date.today().isoformat(), "period": {"start": start_date, "end": end_date}, "count": len(records), "pipeline": pipeline, "flights": records[:100]}
     output.write_text(json.dumps(document, ensure_ascii=False, indent=2), encoding="utf-8")
 
     database.parent.mkdir(parents=True, exist_ok=True)
