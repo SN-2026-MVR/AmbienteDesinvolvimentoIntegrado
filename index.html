@@ -107,22 +107,43 @@
     const dateTimeLabel = (value) => { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); };
     const emptyRow = (message) => `<tr><td colspan="6" class="empty">${safe(message)}</td></tr>`;
     
-    const SUPABASE_URL = localStorage.getItem('SUPABASE_URL') || '';
-    const SUPABASE_ANON_KEY = localStorage.getItem('SUPABASE_ANON_KEY') || '';
-    let supabseReady = SUPABASE_URL && SUPABASE_ANON_KEY;
+    const DEFAULT_SUPABASE_URL = 'https://kuisdconypgqnkogtiwp.supabase.co';
+    const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1aXNkY29ueXBncW5rb2d0aXdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1NDU3NjUsImV4cCI6MjEwNDEyMTc2NX0.ErBscebz8apUBiC1iYd_Lyv2InkGAwiIWIMQAOIJ78o';
+    const SUPABASE_URL = (localStorage.getItem('SUPABASE_URL') || DEFAULT_SUPABASE_URL).trim();
+    const SUPABASE_ANON_KEY = (localStorage.getItem('SUPABASE_ANON_KEY') || DEFAULT_SUPABASE_ANON_KEY).trim();
+    let supabseReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_URL !== 'https://SEU_PROJETO.supabase.co' && SUPABASE_ANON_KEY !== 'SUA_ANON_KEY_PUBLICA');
     
     async function fetchFlightsFromSupabase(startDate, endDate, limit = 50, offset = 0) {
       if (!supabseReady) return [];
       try {
-        const query = encodeURIComponent(`departure.gte.${startDate}T00:00&departure.lt.${endDate}T23:59&order=departure.asc&limit=${limit}&offset=${offset}`);
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/flights?${query}`, {
-          headers: { 'apikey': SUPABASE_ANON_KEY, 'Accept': 'application/json' }
+        const params = new URLSearchParams();
+        params.append('select', '*');
+        params.append('departure', `gte.${startDate}T00:00`);
+        params.append('departure', `lt.${endDate}T23:59`);
+        params.append('order', 'departure.asc');
+        params.append('limit', String(limit));
+        params.append('offset', String(offset));
+
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/flights?${params.toString()}`, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
         });
         return response.ok ? await response.json() : [];
       } catch { return []; }
     }
     
     async function loadFlightsForDate(date, callback) {
+      if (!supabseReady) {
+        const cached = await fetch(`data/flights.json?cache=${Date.now()}`)
+          .then((response) => response.ok ? response.json() : { flights: [] })
+          .catch(() => ({ flights: [] }));
+        const flights = Array.isArray(cached.flights) ? cached.flights.filter((flight) => dateKey(flight.departure) === date) : [];
+        callback(flights);
+        return;
+      }
       const flights = await fetchFlightsFromSupabase(date, date, 100);
       callback(flights);
     }
@@ -130,12 +151,14 @@
     function render(payload) {
       const flights = Array.isArray(payload.flights) ? payload.flights : [];
       const today = new Date().toISOString().slice(0, 10);
-      loadFlightsForDate(today, (todaysFlights) => {
-        const routes = new Set([...(flights || []), ...(todaysFlights || [])].map((flight) => `${flight.origin}|${flight.destination}`)).size;
-        document.querySelector('#metric-today').textContent = todaysFlights.length || '—';
+      const todaysFlights = !supabseReady ? flights.filter((flight) => dateKey(flight.departure) === today) : [];
+      loadFlightsForDate(today, (result) => {
+        const sourceFlights = supabseReady ? result : todaysFlights;
+        const routes = new Set([...(flights || []), ...(sourceFlights || [])].map((flight) => `${flight.origin}|${flight.destination}`)).size;
+        document.querySelector('#metric-today').textContent = sourceFlights.length || '—';
         document.querySelector('#metric-routes').textContent = routes || '—';
-        document.querySelector('#today-subtitle').textContent = `${todaysFlights.length} voo(s) com partida em ${dateLabel(today)}`;
-        document.querySelector('#flights').innerHTML = todaysFlights.length ? todaysFlights.map((flight) => `<tr><td>${safe(flight.flight_number) || '—'}</td><td>${safe(flight.operator) || '—'}</td><td class="route">${safe(flight.origin) || '—'} → ${safe(flight.destination) || '—'}</td><td>${safe(flight.departure) || '—'}</td><td>${safe(flight.arrival) || '—'}</td><td class="status">${safe(flight.status) || '—'}</td></tr>`).join('') : emptyRow(supabseReady ? 'Nenhum voo encontrado para hoje.' : 'Configure Supabase ou use o cache JSON.');
+        document.querySelector('#today-subtitle').textContent = `${sourceFlights.length} voo(s) com partida em ${dateLabel(today)}`;
+        document.querySelector('#flights').innerHTML = sourceFlights.length ? sourceFlights.map((flight) => `<tr><td>${safe(flight.flight_number) || '—'}</td><td>${safe(flight.operator) || '—'}</td><td class="route">${safe(flight.origin) || '—'} → ${safe(flight.destination) || '—'}</td><td>${safe(flight.departure) || '—'}</td><td>${safe(flight.arrival) || '—'}</td><td class="status">${safe(flight.status) || '—'}</td></tr>`).join('') : emptyRow(supabseReady ? 'Nenhum voo encontrado para hoje.' : 'Configure Supabase ou use o cache JSON.');
       });
       document.querySelector('#metric-total').textContent = flights.length || (supabseReady ? 'Consultando...' : '—');
       document.querySelector('#metric-updated').textContent = payload.updated_at ? dateLabel(payload.updated_at).split(' de ')[0] : '—';
@@ -162,21 +185,15 @@
     }
     
     function setupSupabase() {
-      const url = prompt('SUPABASE_URL (ex: https://seu-projeto.supabase.co)');
-      const key = prompt('SUPABASE_ANON_KEY');
-      if (url && key) {
-        localStorage.setItem('SUPABASE_URL', url);
-        localStorage.setItem('SUPABASE_ANON_KEY', key);
-        supabseReady = true;
-        loadFlights();
-      }
+      const url = prompt('SUPABASE_URL (ex: https://seu-projeto.supabase.co)', DEFAULT_SUPABASE_URL) || DEFAULT_SUPABASE_URL;
+      const key = prompt('SUPABASE_ANON_KEY', DEFAULT_SUPABASE_ANON_KEY) || DEFAULT_SUPABASE_ANON_KEY;
+      localStorage.setItem('SUPABASE_URL', url);
+      localStorage.setItem('SUPABASE_ANON_KEY', key);
+      supabseReady = Boolean(url && key && url !== 'https://SEU_PROJETO.supabase.co' && key !== 'SUA_ANON_KEY_PUBLICA');
+      loadFlights();
     }
     document.querySelectorAll('.tab').forEach((tab) => tab.addEventListener('click', () => { document.querySelectorAll('.tab').forEach((item) => item.classList.remove('active')); document.querySelectorAll('.view').forEach((view) => view.classList.remove('active')); tab.classList.add('active'); document.querySelector(`#${tab.dataset.view}`).classList.add('active'); }));
     document.querySelector('#reload').addEventListener('click', loadFlights);
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      const setup = confirm('Supabase não configurado. Deseja configurar agora? (Pressione OK para setup, Cancelar para usar cache)');
-      if (setup) setupSupabase();
-    }
     loadFlights();
   </script>
 </body>
