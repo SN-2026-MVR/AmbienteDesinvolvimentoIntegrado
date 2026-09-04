@@ -51,6 +51,11 @@ def fetch_payload(url: str, start_date: str, end_date: str, timeout: int) -> Any
 
 
 def extract_records(payload: Any) -> list[dict[str, Any]]:
+    if isinstance(payload, str):
+        try:
+            return extract_records(json.loads(payload))
+        except json.JSONDecodeError:
+            return []
     if isinstance(payload, list):
         records = payload
     elif isinstance(payload, dict):
@@ -68,14 +73,20 @@ def value(record: dict[str, Any], *keys: str) -> str:
     return ""
 
 
+def iso_datetime(value_text: str) -> str:
+    if len(value_text) >= 16 and value_text[2] == "/" and value_text[5] == "/":
+        return f"{value_text[6:10]}-{value_text[3:5]}-{value_text[:2]}T{value_text[11:16]}"
+    return value_text
+
+
 def normalize(record: dict[str, Any]) -> dict[str, str]:
     return {
-        "flight_number": value(record, "numeroVoo", "numero_voo", "flightNumber", "voo", "numVoo"),
-        "operator": value(record, "empresa", "empresaNome", "operador", "operator", "companhia"),
-        "origin": value(record, "aeroportoOrigem", "origem", "origin", "origemIata"),
-        "destination": value(record, "aeroportoDestino", "destino", "destination", "destinoIata"),
-        "departure": value(record, "dataHoraPartida", "partida", "departure", "dataPartida"),
-        "arrival": value(record, "dataHoraChegada", "chegada", "arrival", "dataChegada"),
+        "flight_number": value(record, "numeroVoo", "numero_voo", "flightNumber", "voo", "numVoo", "nr_voo"),
+        "operator": value(record, "empresa", "empresaNome", "operador", "operator", "companhia", "sg_empresa_icao"),
+        "origin": value(record, "aeroportoOrigem", "origem", "origin", "origemIata", "sg_icao_origem"),
+        "destination": value(record, "aeroportoDestino", "destino", "destination", "destinoIata", "sg_icao_destino"),
+        "departure": iso_datetime(value(record, "dataHoraPartida", "partida", "departure", "dataPartida", "dt_partida_prevista_utc")),
+        "arrival": iso_datetime(value(record, "dataHoraChegada", "chegada", "arrival", "dataChegada", "dt_chegada_prevista_utc")),
         "status": value(record, "situacao", "status", "situacaoVoo") or "Programado",
     }
 
@@ -115,20 +126,18 @@ def write_supabase(records: list[dict[str, str]], timeout: int) -> None:
         raise RuntimeError("defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY")
 
     endpoint = f"{supabase_url.rstrip('/')}/rest/v1/flights?on_conflict=flight_number,departure,origin,destination"
-    request = Request(
-        endpoint,
-        data=json.dumps(records).encode("utf-8"),
-        method="POST",
-        headers={
-            "apikey": service_role_key,
-            "Authorization": f"Bearer {service_role_key}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates,return=minimal",
-        },
-    )
-    with urlopen(request, timeout=timeout) as response:
-        if response.status >= 300:
-            raise RuntimeError(f"Supabase respondeu HTTP {response.status}")
+    headers = {
+        "apikey": service_role_key,
+        "Authorization": f"Bearer {service_role_key}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates,return=minimal",
+    }
+    for start in range(0, len(records), 1000):
+        batch = records[start:start + 1000]
+        request = Request(endpoint, data=json.dumps(batch).encode("utf-8"), method="POST", headers=headers)
+        with urlopen(request, timeout=timeout) as response:
+            if response.status >= 300:
+                raise RuntimeError(f"Supabase respondeu HTTP {response.status} no lote {start // 1000 + 1}")
 
 
 def main() -> int:
