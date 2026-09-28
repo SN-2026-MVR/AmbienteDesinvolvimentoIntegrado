@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-09-27",
+  "updated_at": "2026-09-28",
   "period": {
-    "start": "2026-09-27",
-    "end": "2026-10-27"
+    "start": "2026-09-28",
+    "end": "2026-10-28"
   },
-  "count": 87999,
+  "count": 88010,
   "pipeline": {
     "batches": 5,
     "errors": 0,
@@ -33,7 +33,6 @@
       "HKJK",
       "KATL",
       "KBOS",
-      "KBWI",
       "KDFW",
       "KEWR",
       "KFLL",
@@ -241,8 +240,8 @@
       "TTPP",
       "ZBAA"
     ],
-    "records": 87999,
-    "completed_at": "2026-09-27T12:05:57",
+    "records": 88010,
+    "completed_at": "2026-09-28T13:59:20",
     "status": "concluído"
   },
   "flights": [
@@ -431,8 +430,8 @@
       "operator": "TAP",
       "origin": "LPPT",
       "destination": "SBSG",
-      "departure": "2026-09-27T16:45",
-      "arrival": "2026-09-28T00:20",
+      "departure": "2026-10-04T16:45",
+      "arrival": "2026-10-05T00:20",
       "status": "Programado"
     },
     {
@@ -467,8 +466,8 @@
       "operator": "TAP",
       "origin": "LPPT",
       "destination": "SBRF",
-      "departure": "2026-09-28T15:50",
-      "arrival": "2026-09-28T23:35",
+      "departure": "2026-09-30T16:15",
+      "arrival": "2026-09-30T23:55",
       "status": "Programado"
     },
     {
@@ -494,26 +493,26 @@
       "operator": "TAP",
       "origin": "LPPT",
       "destination": "SBRF",
+      "departure": "2026-10-04T16:05",
+      "arrival": "2026-10-04T23:50",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0011",
+      "operator": "TAP",
+      "origin": "LPPT",
+      "destination": "SBRF",
+      "departure": "2026-09-28T15:50",
+      "arrival": "2026-09-28T23:35",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0011",
+      "operator": "TAP",
+      "origin": "LPPT",
+      "destination": "SBRF",
       "departure": "2026-10-01T16:15",
       "arrival": "2026-10-01T23:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0011",
-      "operator": "TAP",
-      "origin": "LPPT",
-      "destination": "SBRF",
-      "departure": "2026-09-30T16:15",
-      "arrival": "2026-09-30T23:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0011",
-      "operator": "TAP",
-      "origin": "LPPT",
-      "destination": "SBRF",
-      "departure": "2026-09-27T16:05",
-      "arrival": "2026-09-27T23:50",
       "status": "Programado"
     },
     {
@@ -530,8 +529,8 @@
       "operator": "TAP",
       "origin": "SBRF",
       "destination": "LPPT",
-      "departure": "2026-09-28T01:20",
-      "arrival": "2026-09-28T09:00",
+      "departure": "2026-09-29T01:05",
+      "arrival": "2026-09-29T08:45",
       "status": "Programado"
     },
     {
@@ -548,8 +547,8 @@
       "operator": "TAP",
       "origin": "SBRF",
       "destination": "LPPT",
-      "departure": "2026-09-29T01:05",
-      "arrival": "2026-09-29T08:45",
+      "departure": "2026-09-28T01:20",
+      "arrival": "2026-09-28T09:00",
       "status": "Programado"
     },
     {
@@ -557,8 +556,8 @@
       "operator": "TAP",
       "origin": "SBRF",
       "destination": "LPPT",
-      "departure": "2026-10-01T01:25",
-      "arrival": "2026-10-01T09:00",
+      "departure": "2026-10-04T01:25",
+      "arrival": "2026-10-04T08:55",
       "status": "Programado"
     },
     {
@@ -575,8 +574,8 @@
       "operator": "TAP",
       "origin": "SBRF",
       "destination": "LPPT",
-      "departure": "2026-09-27T01:25",
-      "arrival": "2026-09-27T08:55",
+      "departure": "2026-10-01T01:25",
+      "arrival": "2026-10-01T09:00",
       "status": "Programado"
     },
     {
@@ -602,8 +601,8 @@
       "operator": "AMX",
       "origin": "MMMX",
       "destination": "SBGR",
-      "departure": "2026-09-27T00:55",
-      "arrival": "2026-09-27T10:30",
+      "departure": "2026-10-04T00:55",
+      "arrival": "2026-10-04T10:30",
       "status": "Programado"
     },
     {
@@ -620,8 +619,8 @@
       "operator": "AMX",
       "origin": "MMMX",
       "destination": "SBGR",
-      "departure": "2026-10-02T00:55",
-      "arrival": "2026-10-02T10:30",
+      "departure": "2026-09-28T00:55",
+      "arrival": "2026-09-28T10:30",
       "status": "Programado"
     },
     {
@@ -629,8 +628,8 @@
       "operator": "AMX",
       "origin": "MMMX",
       "destination": "SBGR",
-      "departure": "2026-09-28T00:55",
-      "arrival": "2026-09-28T10:30",
+      "departure": "2026-10-02T00:55",
+      "arrival": "2026-10-02T10:30",
       "status": "Programado"
     },
     {
@@ -653,11 +652,11 @@
     },
     {
       "flight_number": "0015",
-      "operator": "THY",
-      "origin": "LTFM",
-      "destination": "SBGR",
-      "departure": "2026-09-29T07:35",
-      "arrival": "2026-09-29T20:45",
+      "operator": "AMX",
+      "origin": "SBGR",
+      "destination": "MMMX",
+      "departure": "2026-09-30T12:40",
+      "arrival": "2026-09-30T22:00",
       "status": "Programado"
     },
     {
@@ -671,11 +670,11 @@
     },
     {
       "flight_number": "0015",
-      "operator": "AMX",
-      "origin": "SBGR",
-      "destination": "MMMX",
-      "departure": "2026-09-30T12:40",
-      "arrival": "2026-09-30T22:00",
+      "operator": "TAP",
+      "origin": "LPPT",
+      "destination": "SBRF",
+      "departure": "2026-09-29T21:50",
+      "arrival": "2026-09-30T05:35",
       "status": "Programado"
     },
     {
@@ -701,44 +700,8 @@
       "operator": "AMX",
       "origin": "SBGR",
       "destination": "MMMX",
-      "departure": "2026-09-27T12:40",
-      "arrival": "2026-09-27T22:00",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0015",
-      "operator": "THY",
-      "origin": "LTFM",
-      "destination": "SBGR",
-      "departure": "2026-09-30T07:35",
-      "arrival": "2026-09-30T20:45",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0015",
-      "operator": "AMX",
-      "origin": "SBGR",
-      "destination": "MMMX",
-      "departure": "2026-10-01T12:40",
-      "arrival": "2026-10-01T21:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0015",
-      "operator": "TAP",
-      "origin": "LPPT",
-      "destination": "SBRF",
-      "departure": "2026-09-29T21:50",
-      "arrival": "2026-09-30T05:35",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0015",
-      "operator": "TAP",
-      "origin": "LPPT",
-      "destination": "SBRF",
-      "departure": "2026-10-01T22:00",
-      "arrival": "2026-10-02T05:50",
+      "departure": "2026-10-04T12:40",
+      "arrival": "2026-10-04T21:55",
       "status": "Programado"
     },
     {
@@ -755,8 +718,8 @@
       "operator": "TAP",
       "origin": "LPPT",
       "destination": "SBRF",
-      "departure": "2026-09-27T22:00",
-      "arrival": "2026-09-28T05:50",
+      "departure": "2026-10-04T22:00",
+      "arrival": "2026-10-05T05:50",
       "status": "Programado"
     },
     {
@@ -764,8 +727,8 @@
       "operator": "THY",
       "origin": "LTFM",
       "destination": "SBGR",
-      "departure": "2026-10-01T07:35",
-      "arrival": "2026-10-01T20:45",
+      "departure": "2026-09-30T07:35",
+      "arrival": "2026-09-30T20:45",
       "status": "Programado"
     },
     {
@@ -773,8 +736,17 @@
       "operator": "THY",
       "origin": "LTFM",
       "destination": "SBGR",
-      "departure": "2026-09-27T07:35",
-      "arrival": "2026-09-27T20:45",
+      "departure": "2026-10-04T07:35",
+      "arrival": "2026-10-04T20:45",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0015",
+      "operator": "THY",
+      "origin": "LTFM",
+      "destination": "SBGR",
+      "departure": "2026-09-29T07:35",
+      "arrival": "2026-09-29T20:45",
       "status": "Programado"
     },
     {
@@ -784,6 +756,33 @@
       "destination": "MMMX",
       "departure": "2026-09-28T12:40",
       "arrival": "2026-09-28T22:00",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0015",
+      "operator": "AMX",
+      "origin": "SBGR",
+      "destination": "MMMX",
+      "departure": "2026-10-01T12:40",
+      "arrival": "2026-10-01T21:55",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0015",
+      "operator": "TAP",
+      "origin": "LPPT",
+      "destination": "SBRF",
+      "departure": "2026-10-01T22:00",
+      "arrival": "2026-10-02T05:50",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0015",
+      "operator": "THY",
+      "origin": "LTFM",
+      "destination": "SBGR",
+      "departure": "2026-10-01T07:35",
+      "arrival": "2026-10-01T20:45",
       "status": "Programado"
     },
     {
@@ -827,8 +826,8 @@
       "operator": "THY",
       "origin": "SBGR",
       "destination": "SAEZ",
-      "departure": "2026-09-30T22:20",
-      "arrival": "2026-10-01T01:25",
+      "departure": "2026-09-29T22:20",
+      "arrival": "2026-09-30T01:25",
       "status": "Programado"
     },
     {
@@ -854,8 +853,8 @@
       "operator": "THY",
       "origin": "SBGR",
       "destination": "SAEZ",
-      "departure": "2026-09-27T22:20",
-      "arrival": "2026-09-28T01:25",
+      "departure": "2026-10-04T22:20",
+      "arrival": "2026-10-05T01:25",
       "status": "Programado"
     },
     {
@@ -863,8 +862,8 @@
       "operator": "THY",
       "origin": "SBGR",
       "destination": "SAEZ",
-      "departure": "2026-09-29T22:20",
-      "arrival": "2026-09-30T01:25",
+      "departure": "2026-09-30T22:20",
+      "arrival": "2026-10-01T01:25",
       "status": "Programado"
     },
     {
@@ -890,8 +889,8 @@
       "operator": "THY",
       "origin": "SAEZ",
       "destination": "SBGR",
-      "departure": "2026-09-29T02:55",
-      "arrival": "2026-09-29T05:30",
+      "departure": "2026-09-30T02:55",
+      "arrival": "2026-09-30T05:30",
       "status": "Programado"
     },
     {
@@ -908,8 +907,8 @@
       "operator": "TAP",
       "origin": "SBRF",
       "destination": "LPPT",
-      "departure": "2026-09-30T07:35",
-      "arrival": "2026-09-30T15:10",
+      "departure": "2026-09-28T07:35",
+      "arrival": "2026-09-28T15:15",
       "status": "Programado"
     },
     {
@@ -923,38 +922,20 @@
     },
     {
       "flight_number": "0016",
+      "operator": "THY",
+      "origin": "SAEZ",
+      "destination": "SBGR",
+      "departure": "2026-09-29T02:55",
+      "arrival": "2026-09-29T05:30",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0016",
       "operator": "TAP",
       "origin": "SBRF",
       "destination": "LPPT",
-      "departure": "2026-09-28T07:35",
-      "arrival": "2026-09-28T15:15",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0016",
-      "operator": "THY",
-      "origin": "SAEZ",
-      "destination": "SBGR",
-      "departure": "2026-09-27T02:55",
-      "arrival": "2026-09-27T05:30",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0016",
-      "operator": "THY",
-      "origin": "SAEZ",
-      "destination": "SBGR",
-      "departure": "2026-09-30T02:55",
-      "arrival": "2026-09-30T05:30",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0016",
-      "operator": "THY",
-      "origin": "SAEZ",
-      "destination": "SBGR",
-      "departure": "2026-10-01T02:55",
-      "arrival": "2026-10-01T05:30",
+      "departure": "2026-10-04T07:40",
+      "arrival": "2026-10-04T15:15",
       "status": "Programado"
     },
     {
@@ -964,6 +945,33 @@
       "destination": "SBGR",
       "departure": "2026-09-28T02:55",
       "arrival": "2026-09-28T05:30",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0016",
+      "operator": "THY",
+      "origin": "SAEZ",
+      "destination": "SBGR",
+      "departure": "2026-10-04T02:55",
+      "arrival": "2026-10-04T05:30",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0016",
+      "operator": "TAP",
+      "origin": "SBRF",
+      "destination": "LPPT",
+      "departure": "2026-09-30T07:35",
+      "arrival": "2026-09-30T15:10",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0016",
+      "operator": "THY",
+      "origin": "SAEZ",
+      "destination": "SBGR",
+      "departure": "2026-10-01T02:55",
+      "arrival": "2026-10-01T05:30",
       "status": "Programado"
     },
     {
@@ -989,8 +997,8 @@
       "operator": "THY",
       "origin": "SBGR",
       "destination": "LTFM",
-      "departure": "2026-09-28T07:10",
-      "arrival": "2026-09-28T19:55",
+      "departure": "2026-09-30T07:10",
+      "arrival": "2026-09-30T19:55",
       "status": "Programado"
     },
     {
@@ -1007,26 +1015,26 @@
       "operator": "THY",
       "origin": "SBGR",
       "destination": "LTFM",
-      "departure": "2026-09-30T07:10",
-      "arrival": "2026-09-30T19:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0016",
-      "operator": "THY",
-      "origin": "SBGR",
-      "destination": "LTFM",
-      "departure": "2026-09-27T07:10",
-      "arrival": "2026-09-27T19:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0016",
-      "operator": "THY",
-      "origin": "SBGR",
-      "destination": "LTFM",
       "departure": "2026-09-29T07:10",
       "arrival": "2026-09-29T19:55",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0016",
+      "operator": "THY",
+      "origin": "SBGR",
+      "destination": "LTFM",
+      "departure": "2026-10-04T07:10",
+      "arrival": "2026-10-04T19:55",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0016",
+      "operator": "THY",
+      "origin": "SBGR",
+      "destination": "LTFM",
+      "departure": "2026-09-28T07:10",
+      "arrival": "2026-09-28T19:55",
       "status": "Programado"
     },
     {
@@ -1070,8 +1078,8 @@
       "operator": "AEA",
       "origin": "LEMD",
       "destination": "SGAS",
-      "departure": "2026-09-27T21:35",
-      "arrival": "2026-09-28T09:15",
+      "departure": "2026-10-04T21:35",
+      "arrival": "2026-10-05T09:15",
       "status": "Programado"
     },
     {
@@ -1097,26 +1105,26 @@
       "operator": "AEA",
       "origin": "SGAS",
       "destination": "LEMD",
-      "departure": "2026-09-30T15:50",
-      "arrival": "2026-10-01T02:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0024",
-      "operator": "AEA",
-      "origin": "SGAS",
-      "destination": "LEMD",
-      "departure": "2026-09-27T15:50",
-      "arrival": "2026-09-28T02:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0024",
-      "operator": "AEA",
-      "origin": "SGAS",
-      "destination": "LEMD",
       "departure": "2026-09-29T15:50",
       "arrival": "2026-09-30T02:55",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0024",
+      "operator": "AEA",
+      "origin": "SGAS",
+      "destination": "LEMD",
+      "departure": "2026-10-04T15:50",
+      "arrival": "2026-10-05T02:55",
+      "status": "Programado"
+    },
+    {
+      "flight_number": "0024",
+      "operator": "AEA",
+      "origin": "SGAS",
+      "destination": "LEMD",
+      "departure": "2026-09-30T15:50",
+      "arrival": "2026-10-01T02:55",
       "status": "Programado"
     },
     {
@@ -1135,15 +1143,6 @@
       "destination": "LEMD",
       "departure": "2026-10-02T15:50",
       "arrival": "2026-10-03T02:55",
-      "status": "Programado"
-    },
-    {
-      "flight_number": "0024",
-      "operator": "AEA",
-      "origin": "SGAS",
-      "destination": "LEMD",
-      "departure": "2026-10-03T15:50",
-      "arrival": "2026-10-04T02:55",
       "status": "Programado"
     }
   ]
